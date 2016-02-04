@@ -1,0 +1,6 @@
+---
+flashcache_user: "flashcache"
+flashcache_group: "flashcache"
+flashcache_port: 16021
+flashcache_bind: "127.0.0.1"
+flashcache_dir: "/opt/flashcache"

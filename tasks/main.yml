@@ -1,0 +1,42 @@
+---
+- name: Install git
+  sudo: yes
+  apt: pkg={{ item }} state=present
+  with_items: 
+    - git
+  when: ansible_os_family == "Debian"
+
+- name: Create flashcache group
+  sudo: yes
+  group: name={{flashcache_group}} state=present
+
+- name: Create flashcache user
+  sudo: yes
+  user: name={{flashcache_user}} state=present
+
+- name: Clone flashcache source
+  sudo: yes
+  git: dest={{flashcache_dir}} repo=https://github.com/craigmj/flashcache.git force=yes
+
+- name: Own flashcache source
+  sudo: yes
+  file: state=directory 
+        path={{flashcache_dir}}
+        mode=0755
+        owner={{ansible_user_id}}
+        recurse=yes
+
+- name: Build flashcache
+  shell: chdir={{flashcache_dir}} {{flashcache_dir}}/build.sh
+
+- name: Install flashcache upstart
+  sudo: yes
+  shell: chdir="{{flashcache_dir}}" "{{flashcache_dir}}/bin/flashcache" upstart -port {{flashcache_port}} -bind {{flashcache_bind}} | tee /etc/init/flashcache.conf
+
+- name: Add flashcache server to /etc/environment
+  sudo: yes
+  shell: chdir="{{flashcache_dir}}" "{{flashcache_dir}}/bin/flashcache" "write-env" -port {{flashcache_port}}
+
+- name: Start flashcache service
+  sudo: yes
+  service: name=flashcache state=started

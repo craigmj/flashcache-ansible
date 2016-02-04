@@ -1,0 +1,3 @@
+- hosts: flashcache
+  roles: 
+    - role: flashcache
